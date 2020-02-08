@@ -8,6 +8,8 @@ namespace UnityDevTools.Console
 {
     public class ShortConsole : MonoBehaviour
     {
+#pragma warning disable CS0649
+
         [Tooltip("Ui content viewer when content close")]
         [SerializeField]
         private Text _uiContentTextClose;
@@ -16,6 +18,8 @@ namespace UnityDevTools.Console
         private int _maxFpsBuferSize = 20;
         [SerializeField]
         private Button _clearBtn;
+
+#pragma warning restore CS0649
 
         private Queue<int> _FPSBufer;
         private StringBuilder _messageBuilder;
@@ -98,7 +102,7 @@ namespace UnityDevTools.Console
 
         private void ShowCalculatedFps()
         {
-            _FPSBufer.Enqueue((int)(1 / Time.deltaTime));
+            _FPSBufer.Enqueue((int)(1 / Time.unscaledDeltaTime));
             if (_FPSBufer.Count > _maxFpsBuferSize)
             {
                 _FPSBufer.Dequeue();

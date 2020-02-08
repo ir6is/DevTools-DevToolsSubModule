@@ -3,97 +3,132 @@ using UnityEngine.UI;
 
 namespace UnityDevTools.Console
 {
-	public class Console : MonoBehaviour
-	{
-
+    public class Console : MonoBehaviour
+    {
         #region data
 
-        [SerializeField]
-        private Button _openBtn, _closeLongConsoleBtn, _hideBtn, _closeConsole, _hiddenConsole;
-
+        private const int _mouseInputMaxSize = 4;
         private const string _resourcePath = "Console";
-		private static Console _instance;
+        private static Console _instance;
 
-		#endregion
+#pragma warning disable CS0649
 
-		#region interface
+        [SerializeField]
+        private Button _openBtn, _closeLongConsoleBtn, _hideBtn, _closeConsole;
 
-		public static Console Instance
-		{
-			get
-			{
-				if (_instance == null)
-				{
-					_instance = Instantiate(Resources.Load<Console>(_resourcePath));
-					_instance.name = _instance.name.Replace("(Clone)", "");
-				}
+#pragma warning restore CS0649
 
-				return _instance;
-			}
-		}
+        private Vector3[] _mouseInputs;
+        private int _mouseInputCarret = -1;
 
-		public ShortConsole ShortConsole { get; private set; }
-		public LongConsole FullScreenConsole { get; private set; }
+        #endregion
 
-		#endregion
+        #region interface
 
-		#region MonoBehaviour
+        public static Console Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = Instantiate(Resources.Load<Console>(_resourcePath));
+                    _instance.name = _instance.name.Replace("(Clone)", "");
+                }
 
-		private void Awake()
-		{
-			if (_instance == null)
-			{
-				_instance = this;
-				DontDestroyOnLoad(_instance.gameObject);
-			}
-			else
-			{
-				DestroyImmediate(gameObject);
-				return;
-			}
+                return _instance;
+            }
+        }
 
-			ShortConsole = GetComponentInChildren<ShortConsole>(true);
-			ShortConsole.Initialize();
+        public ShortConsole ShortConsole { get; private set; }
+        public LongConsole FullScreenConsole { get; private set; }
 
-			FullScreenConsole = GetComponentInChildren<LongConsole>(true);
-			FullScreenConsole.Initialize();
-			FullScreenConsole.CommandRaised += HubScene.LoadHubScene;
-			FullScreenConsole.CommandRaised += Version.PrintVersion;
+        #endregion
 
-			_openBtn.onClick.AddListener(() =>
-			{
-				FullScreenConsole.gameObject.SetActive(true);
-				ShortConsole.gameObject.SetActive(false);
-			});
+        #region MonoBehaviour
 
-			_closeLongConsoleBtn.onClick.AddListener(() =>
-			{
-				FullScreenConsole.gameObject.SetActive(false);
-				ShortConsole.gameObject.SetActive(true);
-			});
+        private void Awake()
+        {
+            if (_instance == null)
+            {
+                _instance = this;
+                DontDestroyOnLoad(_instance.gameObject);
+            }
+            else
+            {
+                DestroyImmediate(gameObject);
+                return;
+            }
 
-			_hideBtn.onClick.AddListener(() =>
-			{
-				ShortConsole.gameObject.SetActive(false);
-				_hiddenConsole.gameObject.SetActive(true);
-			});
+            ShortConsole = GetComponentInChildren<ShortConsole>(true);
+            ShortConsole.Initialize();
 
-			_closeConsole.onClick.AddListener(() =>
-			{
-				ShortConsole.gameObject.SetActive(false);
-			});
+            FullScreenConsole = GetComponentInChildren<LongConsole>(true);
+            FullScreenConsole.Initialize();
+            FullScreenConsole.CommandRaised += HubScene.LoadHubScene;
+            FullScreenConsole.CommandRaised += Version.PrintVersion;
 
-			_hiddenConsole.onClick.AddListener(() =>
-			{
-				ShortConsole.gameObject.SetActive(true);
-				_hiddenConsole.gameObject.SetActive(false);
-			});
-		}
+            _openBtn.onClick.AddListener(() =>
+            {
+                FullScreenConsole.gameObject.SetActive(true);
+                ShortConsole.gameObject.SetActive(false);
+            });
 
-		#endregion
+            _closeLongConsoleBtn.onClick.AddListener(() =>
+            {
+                FullScreenConsole.gameObject.SetActive(false);
+                ShortConsole.gameObject.SetActive(true);
+            });
 
-		#region interface
+            _hideBtn.onClick.AddListener(() =>
+            {
+                ShortConsole.gameObject.SetActive(false);
+            });
 
-		#endregion
-	}
+            _closeConsole.onClick.AddListener(() =>
+            {
+                ShortConsole.gameObject.SetActive(false);
+            });
+
+            _mouseInputs = new Vector3[_mouseInputMaxSize];
+
+        }
+
+        private void Update()
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                _mouseInputCarret = ++_mouseInputCarret % _mouseInputMaxSize;
+                _mouseInputs[_mouseInputCarret] = Input.mousePosition;
+
+                var firstClick = _mouseInputs[(_mouseInputCarret + 1) % _mouseInputMaxSize];
+                var secondClick = _mouseInputs[(_mouseInputCarret + 2) % _mouseInputMaxSize];
+                var thirdClick = _mouseInputs[(_mouseInputCarret + 3) % _mouseInputMaxSize];
+                var fourth = _mouseInputs[_mouseInputCarret];
+
+                if (firstClick.x <= Screen.width/2 && firstClick.y >= Screen.height/2)
+                {
+                    if (secondClick.x >= Screen.width/2 && secondClick.y >= Screen.height/2)
+                    {
+                        if (thirdClick.x <= Screen.width/2 && thirdClick.y <= Screen.height/2)
+                        {
+                            if (fourth.x >= Screen.width / 2 && fourth.y <= Screen.height / 2)
+                            {
+                                for (int i = 0; i < _mouseInputs.Length; i++)
+                                {
+                                    _mouseInputs[i] = Vector3.zero;
+                                }
+
+                                if (!FullScreenConsole.isActiveAndEnabled)
+                                {
+                                    ShortConsole.gameObject.SetActive(true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion
+    }
 }

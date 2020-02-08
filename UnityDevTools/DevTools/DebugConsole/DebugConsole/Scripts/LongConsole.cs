@@ -22,7 +22,9 @@ namespace UnityDevTools.Console
 		/// </summary>
 		private const int MaxCharAmount = 16000;
 
-		[Tooltip("Logs settings")]
+#pragma warning disable CS0649
+
+        [Tooltip("Logs settings")]
 		[SerializeField]
 		private LogViewSettings[] _logViewSettings = new LogViewSettings[1];
 
@@ -37,7 +39,9 @@ namespace UnityDevTools.Console
 		[SerializeField]
 		private Button _executeBtn, _clearLog;
 
-		private Queue<string> _messages;
+#pragma warning restore CS0649
+
+        private Queue<string> _messages;
 		private StringBuilder _messageBuilder;
 		private ScrollRect _scrollRect;
 
