@@ -12,7 +12,7 @@ public class ConsoleTester : MonoBehaviour {
         StartCoroutine(PrintDebug());
 
         Console.Instance.ShortConsole.AddStringView("debugString", debugString);
-        Console.Instance.FullScreenConsole.CommandRaised += OnExecuteListener;
+        Console.Instance.LongConsole.CommandRaised += OnExecuteListener;
     }
 	
 	// Update is called once per frame

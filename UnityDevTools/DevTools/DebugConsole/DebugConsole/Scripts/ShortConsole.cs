@@ -102,7 +102,7 @@ namespace UnityDevTools.Console
 
         private void ShowCalculatedFps()
         {
-            _FPSBufer.Enqueue((int)(1 / Time.unscaledDeltaTime));
+            _FPSBufer.Enqueue((int)(1 / Time.deltaTime));
             if (_FPSBufer.Count > _maxFpsBuferSize)
             {
                 _FPSBufer.Dequeue();

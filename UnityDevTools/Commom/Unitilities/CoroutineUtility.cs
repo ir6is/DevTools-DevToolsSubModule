@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace UnityDevTools.Common
@@ -21,19 +20,6 @@ namespace UnityDevTools.Common
                 var currentPersent = (Time.time - startTime) / animationTime;
                 action(currentPersent);
             }
-        }
-
-        public static Task StartTaskCoroutine(Coroutine coroutine)
-        {
-            var sourse = new TaskCompletionSource<object>();
-            StartCoroutine(coroutine, sourse);
-            return sourse.Task;
-        }
-
-        private static IEnumerator StartCoroutine(Coroutine enumerator, TaskCompletionSource<object> sourse)
-        {
-            yield return enumerator;
-            sourse.SetResult(null);
         }
     }
 }

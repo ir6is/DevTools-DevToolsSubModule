@@ -8,18 +8,24 @@ namespace UnityDevTools.Console
         #region data
 
         private const int _mouseInputMaxSize = 4;
-        private const string _resourcePath = "Console";
-        private static Console _instance;
 
 #pragma warning disable CS0649
 
         [SerializeField]
-        private Button _openBtn, _closeLongConsoleBtn, _hideBtn, _closeConsole;
+        private Button _openBtn, _closeLongConsoleBtn, _closeConsole;
+        [SerializeField]
+        private string[] _deviseIds;
+        [SerializeField]
+        private bool _allDevisesSupport = true;
 
 #pragma warning restore CS0649
 
+        private const string _resourcePath = "Console";
+        private static Console _instance;
+
         private Vector3[] _mouseInputs;
         private int _mouseInputCarret = -1;
+        private bool _idContains;
 
         #endregion
 
@@ -29,10 +35,15 @@ namespace UnityDevTools.Console
         {
             get
             {
-                if (_instance == null)
+                if (!_instance)
                 {
-                    _instance = Instantiate(Resources.Load<Console>(_resourcePath));
-                    _instance.name = _instance.name.Replace("(Clone)", "");
+                     _instance=FindObjectOfType<Console>();
+
+                    if (!_instance)
+                    {
+                        _instance = Instantiate(Resources.Load<Console>(_resourcePath));
+                        _instance.name = _instance.name.Replace("(Clone)", "");
+                    }
                 }
 
                 return _instance;
@@ -40,7 +51,7 @@ namespace UnityDevTools.Console
         }
 
         public ShortConsole ShortConsole { get; private set; }
-        public LongConsole FullScreenConsole { get; private set; }
+        public LongConsole LongConsole { get; private set; }
 
         #endregion
 
@@ -59,29 +70,31 @@ namespace UnityDevTools.Console
                 return;
             }
 
+            foreach (var item in _deviseIds)
+            {
+                if (SystemInfo.deviceUniqueIdentifier == item)
+                {
+                    _idContains = true;
+                    break;
+                }
+            }
+
             ShortConsole = GetComponentInChildren<ShortConsole>(true);
             ShortConsole.Initialize();
 
-            FullScreenConsole = GetComponentInChildren<LongConsole>(true);
-            FullScreenConsole.Initialize();
-            FullScreenConsole.CommandRaised += HubScene.LoadHubScene;
-            FullScreenConsole.CommandRaised += Version.PrintVersion;
+            LongConsole = GetComponentInChildren<LongConsole>(true);
+            LongConsole.Initialize();
 
             _openBtn.onClick.AddListener(() =>
             {
-                FullScreenConsole.gameObject.SetActive(true);
+                LongConsole.gameObject.SetActive(true);
                 ShortConsole.gameObject.SetActive(false);
             });
 
             _closeLongConsoleBtn.onClick.AddListener(() =>
             {
-                FullScreenConsole.gameObject.SetActive(false);
+                LongConsole.gameObject.SetActive(false);
                 ShortConsole.gameObject.SetActive(true);
-            });
-
-            _hideBtn.onClick.AddListener(() =>
-            {
-                ShortConsole.gameObject.SetActive(false);
             });
 
             _closeConsole.onClick.AddListener(() =>
@@ -90,10 +103,21 @@ namespace UnityDevTools.Console
             });
 
             _mouseInputs = new Vector3[_mouseInputMaxSize];
-
         }
 
         private void Update()
+        {
+            if (_allDevisesSupport || _idContains)
+            {
+                CheckOpen();
+            }
+        }
+
+        #endregion
+
+        #region interface
+
+        private void CheckOpen()
         {
             if (Input.GetMouseButtonDown(0))
             {
@@ -105,11 +129,11 @@ namespace UnityDevTools.Console
                 var thirdClick = _mouseInputs[(_mouseInputCarret + 3) % _mouseInputMaxSize];
                 var fourth = _mouseInputs[_mouseInputCarret];
 
-                if (firstClick.x <= Screen.width/2 && firstClick.y >= Screen.height/2)
+                if (firstClick.x <= Screen.width / 2 && firstClick.y >= Screen.height / 2)
                 {
-                    if (secondClick.x >= Screen.width/2 && secondClick.y >= Screen.height/2)
+                    if (secondClick.x >= Screen.width / 2 && secondClick.y >= Screen.height / 2)
                     {
-                        if (thirdClick.x <= Screen.width/2 && thirdClick.y <= Screen.height/2)
+                        if (thirdClick.x <= Screen.width / 2 && thirdClick.y <= Screen.height / 2)
                         {
                             if (fourth.x >= Screen.width / 2 && fourth.y <= Screen.height / 2)
                             {
@@ -118,7 +142,7 @@ namespace UnityDevTools.Console
                                     _mouseInputs[i] = Vector3.zero;
                                 }
 
-                                if (!FullScreenConsole.isActiveAndEnabled)
+                                if (!LongConsole.isActiveAndEnabled)
                                 {
                                     ShortConsole.gameObject.SetActive(true);
                                 }
