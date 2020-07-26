@@ -2,10 +2,10 @@
 
 public static class Bezier
 {
-    public static float GetLenght(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, int iterationCount = 1)
+    public static float GetLenght(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, int iterationCount = 10)
     {
         var lenght = 0f;
-        var prevPoint= GetPoint(p0, p1, p2, p3, 0);
+        var prevPoint= p0;
 
         for (int i = 1; i <= iterationCount; i++)
         {

@@ -16,39 +16,80 @@ public class BezierSplinesInspector : Editor
         Color.red
     };
 
+    private static bool m_drawTangents = true;
+
     private BezierSplines _spline;
     private Transform _handleTransform;
     private Quaternion _handleRotation;
     private int selectedIndex = -1;
+    private int curveIndexToAdd = 0;
+    private int curveIndexToRemove = 0;
 
+    private void OnEnable()
+    {
+
+    }
+
+    private static GUILayoutOption miniButtonWidth = GUILayout.Width(70);
     public override void OnInspectorGUI()
     {
         _spline = target as BezierSplines;
         DrawDefaultInspector();
 
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField(" ", "Custom editor part");
+
         EditorGUI.BeginChangeCheck();
+        var drawTangents = EditorGUILayout.ToggleLeft("Draw Tangents", m_drawTangents);
+
+        if (EditorGUI.EndChangeCheck())
+        {
+            m_drawTangents = drawTangents;
+        }
 
         if (selectedIndex >= 0 && selectedIndex < _spline.ControlPointCount)
         {
-            DrawSelectedPointInspector();
+            DrawSelectedPointInspector(selectedIndex);
         }
-        if (GUILayout.Button("Add Curve"))
+
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("Add curve"))
         {
-            Undo.RecordObject(_spline, "Add Curve");
+            Undo.RecordObject(_spline, "Add curve");
             _spline.AddCurve();
             EditorUtility.SetDirty(_spline);
         }
+        if (GUILayout.Button("Incert Curve in index"))
+        {
+            Undo.RecordObject(_spline, "Inert curve");
+            _spline.InsertCurve(curveIndexToAdd);
+            EditorUtility.SetDirty(_spline);
+        }
+        curveIndexToAdd = EditorGUILayout.IntSlider(curveIndexToAdd, 0, _spline.CurveCount);
+        EditorGUILayout.EndHorizontal();
+
+
+        EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button("Remove Curve"))
         {
             Undo.RecordObject(_spline, "Remove Curve");
             _spline.RemoveCurve();
             EditorUtility.SetDirty(_spline);
         }
+        if (GUILayout.Button("Remove At Curve"))
+        {
+            Undo.RecordObject(_spline, "Remove at Curve");
+            _spline.RemoveAtCurve(curveIndexToRemove);
+            EditorUtility.SetDirty(_spline);
+        }
+        curveIndexToRemove = EditorGUILayout.IntSlider(curveIndexToRemove, 0, _spline.CurveCount - 1);
+        EditorGUILayout.EndHorizontal();
     }
 
-    private void DrawSelectedPointInspector()
+    private void DrawSelectedPointInspector(int selectedIndex)
     {
-        GUILayout.Label("Selected Point");
+        EditorGUILayout.LabelField($"Selected Point with index {selectedIndex} .");
+
         EditorGUI.BeginChangeCheck();
         Vector3 point = EditorGUILayout.Vector3Field("Position", _spline.GetControlPoint(selectedIndex));
         if (EditorGUI.EndChangeCheck())
@@ -71,8 +112,7 @@ public class BezierSplinesInspector : Editor
     {
         _spline = target as BezierSplines;
         _handleTransform = _spline.transform;
-        _handleRotation = Tools.pivotRotation == PivotRotation.Local ?
-            _handleTransform.rotation : Quaternion.identity;
+        _handleRotation = Tools.pivotRotation == PivotRotation.Local ? _handleTransform.rotation : Quaternion.identity;
 
         if (_spline.ControlPointCount != 0)
         {
@@ -84,12 +124,17 @@ public class BezierSplinesInspector : Editor
                 Vector3 p3 = ShowPoint(i + 2);
 
                 Handles.color = Color.gray;
-                Handles.DrawLine(p0, p1);
-                Handles.DrawLine(p2, p3);
+
+                if (m_drawTangents)
+                {
+                    Handles.DrawLine(p0, p1);
+                    Handles.DrawLine(p2, p3);
+                }
 
                 Handles.DrawBezier(p0, p3, p1, p2, Color.white, null, 2f);
                 p0 = p3;
             }
+
             ShowDirections();
         }
     }
@@ -117,12 +162,30 @@ public class BezierSplinesInspector : Editor
         const float handleSize = 0.04f;
         const float pickSize = 0.06f;
 
-        //if (index % 3 == 0) /// TODO
+        if (index % 3 == 0)
         {
+            Handles.Label(point, $"Point index {index}");
+
             if (Handles.Button(point, _handleRotation, size * handleSize, size * pickSize, Handles.CubeHandleCap))
             {
                 selectedIndex = index;
                 Repaint();
+            }
+        }
+        else
+        {
+            if (m_drawTangents)
+            {
+                if (Handles.Button(point, _handleRotation, size * handleSize * .8f, size * pickSize, Handles.SphereHandleCap))
+                {
+                    selectedIndex = index;
+                    Repaint();
+                }
+
+                if (selectedIndex == index)
+                {
+                    Handles.Label(point, $"Tangent index {index}");
+                }
             }
         }
 

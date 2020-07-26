@@ -1,5 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.CodeDom;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using UnityEngine;
 
 public class BezierSplines : MonoBehaviour
@@ -12,69 +15,65 @@ public class BezierSplines : MonoBehaviour
     [SerializeField]
     private List<BezierControlPointMode> _modes = new List<BezierControlPointMode>();
 
-    private float? _lenght;
-    private List<float?> _curvesLenght=new List<float?>();
+    [SerializeField]
+    [HideInInspector]
+    private float _lenght=float.NaN;
+    [SerializeField]
+    [HideInInspector]
+    private List<float> _curvesLenght = new List<float>() { float.NaN };
 
-    public int ControlPointCount
-    {
-        get
-        {
-            return _points.Count;
-        }
-    }
-
-    public int CurveCount
-    {
-        get
-        {
-            return (_points.Count - 1) / 3;
-        }
-    }
+    public int ControlPointCount => _points.Count;
+    public int CurveCount => (_points.Count - 1) / 3;
 
     public float Lenght
     {
         get
         {
-           if (!_lenght.HasValue)
+            if (float.IsNaN(_lenght))
             {
                 _lenght = 0;
 
-                if (ControlPointCount != 0)
+                for (int i = 0; i < CurveCount - 1; i++)
                 {
-                    Vector3 p0 = GetControlPoint(0);
-                    for (int i = 1; i < ControlPointCount; i += 3)
-                    {
-                        Vector3 p1 = GetControlPoint(i);
-                        Vector3 p2 = GetControlPoint(i + 1);
-                        Vector3 p3 = GetControlPoint(i + 2);
-
-                        _lenght += Bezier.GetLenght(p0, p1, p2, p3);
-                        p0 = p3;
-                    }
+                    _lenght += GetLenghtFrom2ControlPoints(i, i + 1);
                 }
-
             }
 
-            return _lenght.Value;
+            return _lenght;
         }
     }
 
-    public float GetDistanceFrom2CurveIndexes(int curveIndexStart,int curveIndexEnd)
+    public float GetDistanceFrom2CurveIndexes(int curveIndexStart, int curveIndexEnd) => GetLenghtFrom2ControlPoints(curveIndexStart * 3, curveIndexEnd * 3);
+
+    public Vector3 GetControlPoint(int index) => _points[index];
+
+    public Vector3 GeWorldControlPoint(int index) => transform.TransformPoint(GetControlPoint(index));
+    public Vector3 GetWordPointByDitsance(float distance)
     {
-       return GetLenghtFrom2ControlPoints(curveIndexStart*3, curveIndexEnd*3);
+        var pointId = GetPointIdentificatorFromDistance(distance);
+        return transform.TransformPoint(Bezier.GetPoint(_points[pointId.i], _points[pointId.i + 1], _points[pointId.i + 2], _points[pointId.i + 3], pointId.t));
     }
 
-    public Vector3 GetControlPoint(int index)
+    public Vector3 GetDirection(float t) => GetVelocity(t).normalized;
+
+    public Vector3 GetWorldPoint(float t)
     {
-        return _points[index];
+        var pointId = GetPointIdentificationEvenlly(t);
+        return transform.TransformPoint(Bezier.GetPoint(_points[pointId.i], _points[pointId.i + 1], _points[pointId.i + 2], _points[pointId.i + 3], pointId.t));
     }
 
-    public Vector3 GeWorldControlPoint(int index)
+    public Vector3 GetVelocity(float t)
     {
-        return transform.TransformPoint(GetControlPoint(index));
+        var pointId = GetPointIdentificationEvenlly(t);
+
+        return transform.TransformPoint(Bezier.GetFirstDerivative(_points[pointId.i], _points[pointId.i + 1], _points[pointId.i + 2], _points[pointId.i + 3], pointId.t)) - transform.position; ;
     }
 
-    public int ControlPoint2CurvePoint(int index) => index * 3;
+
+    public BezierControlPointMode GetControlPointMode(int index)
+    {
+        return _modes[(index + 1) / 3];
+    }
 
     public void SetWorldControlPoint(int index, Vector3 point)
     {
@@ -84,7 +83,7 @@ public class BezierSplines : MonoBehaviour
 
     public void SetControlPoint(int index, Vector3 point)
     {
-        _lenght = null;
+        _lenght = float.NaN;
 
         if (index % 3 == 0)
         {
@@ -99,13 +98,9 @@ public class BezierSplines : MonoBehaviour
                 _points[index + 1] += delta;
             }
         }
-        _points[index] = point;
-        EnforceMode(index, true);
-    }
 
-    public BezierControlPointMode GetControlPointMode(int index)
-    {
-        return _modes[(index + 1) / 3];
+        _points[index] = point;
+        EnforceMode(index);
     }
 
     public void SetControlPointMode(int index, BezierControlPointMode mode)
@@ -113,32 +108,7 @@ public class BezierSplines : MonoBehaviour
         int modeIndex = (index + 1) / 3;
         _modes[modeIndex] = mode;
 
-        EnforceMode(index, true);
-    }
-
-    private void EnforceMode(int index, bool smothRequrs = false)
-    {
-        EnforceUtils.EnforceFree(index, _points, _modes);
-        EnforceUtils.EnforceSmoothed(index, _points, _modes, _smoothed);
-        EnforceUtils.EnforceAlignedAndMirrowed(index, _points, _modes);
-        _lenght = null;
-    }
-
-    public Vector3 GetWorldPoint(float t)
-    {
-        var pointId = GetPointIdentificationEvenlly(t);
-        return transform.TransformPoint(Bezier.GetPoint(_points[pointId.i], _points[pointId.i + 1], _points[pointId.i + 2], _points[pointId.i + 3], pointId.t)) ;
-    }
-
-    public Vector3 GetVelocity(float t)
-    {
-        var pointId = GetPointIdentificationEvenlly(t);
-        return transform.TransformPoint(Bezier.GetFirstDerivative(_points[pointId.i], _points[pointId.i + 1], _points[pointId.i + 2], _points[pointId.i + 3], pointId.t)) - transform.position; ;
-    }
-
-    public Vector3 GetDirection(float t)
-    {
-        return GetVelocity(t).normalized;
+        EnforceMode(index);
     }
 
     public void AddCurve()
@@ -152,58 +122,125 @@ public class BezierSplines : MonoBehaviour
         point.x += 1f;
         _points.Add(point);
 
-
         _modes.Add(_modes[_modes.Count - 2]);
-        _curvesLenght.Add(null);
-        EnforceMode(_points.Count - 4, true);
+        _curvesLenght.Add(float.NaN);
+        EnforceMode(_points.Count - 4);
+        _lenght = float.NaN;
+    }
+
+    public void InsertCurve(int curveIndex, BezierControlPointMode controlPointMode=BezierControlPointMode.Free)
+    {
+        Vector3 point = _points[curveIndex*3];
+
+        _points.Insert(curveIndex * 3+1,point);
+        _points.Insert(curveIndex * 3 + 1, point);
+        _points.Insert(curveIndex * 3 + 1, point);
+
+        _modes.Insert(curveIndex, controlPointMode);
+        _curvesLenght.Insert(curveIndex,float.NaN);
+        _lenght = float.NaN;
+        EnforceMode(curveIndex);
     }
 
     public void RemoveCurve()
     {
-        _points.RemoveAt(_points.Count - 1);
-        _points.RemoveAt(_points.Count - 1);
-        _points.RemoveAt(_points.Count - 1);
-        _modes.RemoveAt(_modes.Count - 1);
-        _curvesLenght.RemoveAt(_curvesLenght.Count - 1);
-        _lenght = null;
+        if (CurveCount != 1)
+        {
+            _points.RemoveAt(_points.Count - 1);
+            _points.RemoveAt(_points.Count - 1);
+            _points.RemoveAt(_points.Count - 1);
+            _modes.RemoveAt(_modes.Count - 1);
+            _curvesLenght.RemoveAt(_curvesLenght.Count - 1);
+            _lenght = float.NaN;
+        }
+    }
+
+    public void RemoveAtCurve(int indexRemoveAt)
+    {
+        if (CurveCount != 1)
+        {
+            _points.RemoveAt(indexRemoveAt*3);
+            _points.RemoveAt(indexRemoveAt * 3); 
+            _points.RemoveAt(indexRemoveAt * 3);
+
+            _modes.RemoveAt(indexRemoveAt);
+            _curvesLenght.RemoveAt(indexRemoveAt);
+            _lenght = float.NaN;
+        }
     }
 
     public void Reset()
     {
+        _curvesLenght = new List<float>()
+        {
+            float.NaN
+        };
+
         _points = new List<Vector3> {
             new Vector3(1f, 0f, 0f),
             new Vector3(2f, 0f, 0f),
             new Vector3(3f, 0f, 0f),
             new Vector3(4f, 0f, 0f)
         };
+
         _modes = new List<BezierControlPointMode> {
             BezierControlPointMode.Free,
             BezierControlPointMode.Free
         };
 
-        _lenght = null;
+        _lenght = float.NaN;
     }
 
-    // todo made it with curve points
     private float GetLenghtFrom2ControlPoints(int controlPointStartIndex, int controlPointIndexEnd)
     {
         var lenght = 0f;
 
         if (ControlPointCount != 0)
         {
-            Vector3 p0 = GetControlPoint(controlPointStartIndex);
-            for (int i = controlPointStartIndex + 1; i < controlPointIndexEnd; i += 3)
+            for (int i = controlPointStartIndex; i < controlPointIndexEnd; i += 3)
             {
-                Vector3 p1 = GetControlPoint(i);
-                Vector3 p2 = GetControlPoint(i + 1);
-                Vector3 p3 = GetControlPoint(i + 2);
+                var curveIndexe = i / 3;
 
-                lenght += Bezier.GetLenght(p0, p1, p2, p3);
-                p0 = p3;
+                if (float.IsNaN(_curvesLenght[curveIndexe]))
+                {
+                    Vector3 p0 = GetControlPoint(i);
+                    Vector3 p1 = GetControlPoint(i + 1);
+                    Vector3 p2 = GetControlPoint(i + 2);
+                    Vector3 p3 = GetControlPoint(i + 3);
+
+                    var curveLenght = Bezier.GetLenght(p0, p1, p2, p3);
+                    _curvesLenght[curveIndexe] = curveLenght;
+                    lenght += curveLenght;
+                }
+                else
+                {
+
+                    lenght += _curvesLenght[curveIndexe];
+                }
             }
         }
 
         return lenght;
+    }
+
+    private void EnforceMode(int index)
+    {
+        EnforceUtils.EnforceFree(index, _points, _modes);
+        EnforceUtils.EnforceSmoothed(index, _points, _modes, _smoothed);
+        EnforceUtils.EnforceAlignedAndMirrowed(index, _points, _modes);
+        _lenght = float.NaN;
+
+        var curveIndex = index / 3;
+
+        if (curveIndex != _curvesLenght.Count)
+        {
+            _curvesLenght[curveIndex] = float.NaN;
+        }
+
+        if (index % 3 == 0 && index >= 3)
+        {
+            _curvesLenght[curveIndex - 1] = float.NaN;
+        }
     }
 
     // todo artem add cache
@@ -229,10 +266,19 @@ public class BezierSplines : MonoBehaviour
 
     private (int i, float t) GetPointIdentificationEvenlly(float t)
     {
+        var fullLenght = Lenght;
         t = Mathf.Clamp01(t);
 
-        var fullLenght = Lenght;
         var targetLenght = t * fullLenght;
+        return GetPointIdentificatorFromDistance(targetLenght);
+    }
+
+    private (int i, float t) GetPointIdentificatorFromDistance(float distance)
+    {
+        var fullLenght = Lenght;
+
+        distance = Mathf.Clamp(distance, 0, fullLenght);
+
         var currentLenght = 0f;
 
         for (int i = 0; i < ControlPointCount - 3; i += 3)
@@ -240,9 +286,9 @@ public class BezierSplines : MonoBehaviour
             var nextLenght = GetDistanceFrom2CurveIndexes(i / 3, i / 3 + 1);
             currentLenght += nextLenght;
 
-            if (currentLenght >= targetLenght)
+            if (currentLenght >= distance)
             {
-                t = (targetLenght - (currentLenght - nextLenght)) / nextLenght;
+                var t = (distance - (currentLenght - nextLenght)) / nextLenght;
                 return (i, t);
             }
         }
