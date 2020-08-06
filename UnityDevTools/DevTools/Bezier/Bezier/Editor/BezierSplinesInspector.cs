@@ -164,7 +164,8 @@ public class BezierSplinesInspector : Editor
 
         if (index % 3 == 0)
         {
-            Handles.Label(point, $"Point index {index}");
+            Handles.Label(point+Vector3.down*.1f, $"Point index {index}");
+            Handles.Label(point + Vector3.down * .2f, $"Curve index {index/3}");
 
             if (Handles.Button(point, _handleRotation, size * handleSize, size * pickSize, Handles.CubeHandleCap))
             {
