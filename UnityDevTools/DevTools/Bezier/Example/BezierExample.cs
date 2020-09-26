@@ -5,11 +5,15 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class BezierExample : MonoBehaviour
 {
+#pragma warning disable CS0649
+
     [SerializeField]
     private GameObject[] m_points;
 
     [SerializeField]
     private BezierSplines m_bezierSplines;
+
+#pragma warning restore CS0649
     public float offcet;
     public float speedDecr = 100;
     // Update is called once per framess

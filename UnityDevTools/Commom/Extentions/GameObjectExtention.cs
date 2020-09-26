@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameObjectUtility : MonoBehaviour
+public class GameObjectExtention : MonoBehaviour
 {
     public static void MoveToLayer(GameObject root, int layer)
     {

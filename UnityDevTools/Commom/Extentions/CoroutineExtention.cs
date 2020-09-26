@@ -6,9 +6,9 @@ using UnityEngine.UI;
 namespace UnityDevTools.Common
 {
     /// <summary>
-    /// CoroutineUtility.
+    /// CoroutineExtention.
     /// </summary>
-    public static class CoroutineUtility
+    public static class CoroutineExtention
     {
         public static IEnumerator LerpCoroutine(Action<float> action, float animationTime)
         {

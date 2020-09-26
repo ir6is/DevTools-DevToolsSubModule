@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 public class DataUserExample : MonoBehaviour
 {
+#pragma warning disable CS0649
     [SerializeField]
     private DataService _dataService;
 
@@ -26,6 +27,8 @@ public class DataUserExample : MonoBehaviour
     private Button _changeCtorBtn1;
     [SerializeField]
     private Text _ctorDataText1;
+
+#pragma warning restore
 
     private void Start()
     {

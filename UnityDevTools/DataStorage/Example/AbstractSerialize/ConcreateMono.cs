@@ -4,12 +4,16 @@ using UnityEngine;
 
 public class ConcreateMono : MonoBehaviour, IItem
 {
+#pragma warning disable CS0649
+
     [SerializeField]
     private string m_id;
     [SerializeField]
     private double m_value;
     [SerializeField]
     private bool m_isEquipable;
+
+#pragma warning restore CS0649
 
     public int OwnValue;
 

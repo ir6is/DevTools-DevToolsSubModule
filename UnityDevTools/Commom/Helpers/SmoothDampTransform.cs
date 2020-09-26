@@ -49,12 +49,12 @@ namespace UnityDevTools.Common
             if (m_isWorkingInLocalCordinates)
             {
                 transform.localPosition = Vector3.SmoothDamp(transform.localPosition, TargetPosition, ref m_velocity, m_smoothTimeMove, m_maxSpeedMove);
-                transform.localRotation = QuaternionUtil.SmoothDamp(transform.localRotation, TargetRotation, ref m_deriv, m_smoothTimeRotation);
+                transform.localRotation = QuaternionExtention.SmoothDamp(transform.localRotation, TargetRotation, ref m_deriv, m_smoothTimeRotation);
             }
             else
             {
                 transform.position = Vector3.SmoothDamp(transform.position, TargetPosition, ref m_velocity, m_smoothTimeMove, m_maxSpeedMove);
-                transform.rotation = QuaternionUtil.SmoothDamp(transform.rotation, TargetRotation, ref m_deriv, m_smoothTimeRotation);
+                transform.rotation = QuaternionExtention.SmoothDamp(transform.rotation, TargetRotation, ref m_deriv, m_smoothTimeRotation);
             }
         }
 

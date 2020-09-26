@@ -10,8 +10,12 @@ namespace UnityDevTools.Console
     /// </summary>
     public class CommandsInitializator : MonoBehaviour
     {
+#pragma warning disable CS0649
+
         [SerializeField]
         private Command[] _commands;
+
+#pragma warning restore CS0649
 
         private void Start()
         {

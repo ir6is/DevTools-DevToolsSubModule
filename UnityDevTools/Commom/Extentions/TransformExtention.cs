@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class TransformUtility
+public static class TransformExtention
 {
     public  static void DestroyAllChildrens(this Transform transform)
     {

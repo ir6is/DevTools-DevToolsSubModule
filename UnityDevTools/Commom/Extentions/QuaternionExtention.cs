@@ -5,7 +5,7 @@ using UnityEngine;
 
 // Original Author: Max Kaufmann (max.kaufmann@gmail.com)
 
-public static class QuaternionUtil
+public static class QuaternionExtention
 {
     public static Quaternion AngVelToDeriv(Quaternion Current, Vector3 AngVel)
     {
