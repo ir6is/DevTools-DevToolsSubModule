@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41657bb2475cb7d47a22a453f4069ff1, type: 3}
+  m_Name: ExampleScriptableData
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects:
+    - {fileID: 8260846205136503588, guid: f80afb3d2a54503418b69659df84c5ad, type: 3}
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: SomeComponents
+      Entry: 7
+      Data: 0|System.Collections.Generic.List`1[[IItem, Assembly-CSharp]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 3
+    - Name: 
+      Entry: 10
+      Data: 0
+    - Name: 
+      Entry: 7
+      Data: 1|ConcreateSimple, Assembly-CSharp
+    - Name: m_id
+      Entry: 1
+      Data: 858251612
+    - Name: m_value
+      Entry: 4
+      Data: -1468565878
+    - Name: m_isEquipable
+      Entry: 5
+      Data: false
+    - Name: OwnValue
+      Entry: 3
+      Data: 681582858
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 2|ConcreateSimple1, Assembly-CSharp
+    - Name: m_id
+      Entry: 1
+      Data: 1020179842
+    - Name: m_value
+      Entry: 4
+      Data: -1975605327
+    - Name: m_isEquipable
+      Entry: 5
+      Data: false
+    - Name: OwnValue
+      Entry: 3
+      Data: -1334866362
+    - Name: OwnValueRatatatam
+      Entry: 3
+      Data: 426660144
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
