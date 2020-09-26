@@ -50,7 +50,8 @@ namespace UnityDevTools.Console
 
         private void Update()
         {
-            ShowCalculatedFps();
+            _messageBuilder.Clear();
+            //ShowCalculatedFps();
 
             foreach (KeyValuePair<string, string> pair in _keyAndValueView)
             {

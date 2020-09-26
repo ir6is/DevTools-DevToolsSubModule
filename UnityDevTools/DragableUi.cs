@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 
 namespace UnityDevTools.Console
 {
-	public class DragWhenClose : MonoBehaviour, IDragHandler
+	public class DragableUi : MonoBehaviour, IDragHandler
 	{
 		public void OnDrag(PointerEventData eventData)
 		{
